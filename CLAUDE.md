@@ -51,11 +51,11 @@ Links flow outward only. vault/ may reference anything. design/ references requi
 
 ## Architectural Direction
 
-### Two-Phase Separation (ADR-001)
+### Two Separate Apps (ADR-001 — Accepted)
 
-The product is split into two distinct phases with different user needs and data models:
+**Confirmed by Ivan (2026-02-26):** Two separate applications, separate databases, separate auth. Users are completely different between phases — no shared authentication needed.
 
-**Phase 1 — Pengajuan (Application):** Initial interest → MoU signing / store opening
+**App 1 — Pengajuan (Application):** Initial interest → MoU signing / store opening
 - Franchise application form (data diri, lokasi, modal)
 - Document collection & verification (KTP, NPWP, SIUP, IMB, NIB, etc.)
 - Location proposal & feasibility survey
@@ -63,14 +63,16 @@ The product is split into two distinct phases with different user needs and data
 - Admin review & approval workflow
 - Payment tracking (franchise fee ~Rp494M)
 - Communication between applicant & Indomaret
+- **Users**: Calon mitra (applicants), Indomaret admin reviewers
 
-**Phase 2 — Pasca Buka Toko (Post-Opening):** After store is operational
+**App 2 — Pasca Buka Toko (Post-Opening):** After store is operational
 - Store performance dashboard
 - Financial reporting (omzet, royalty with progressive 0-4% structure)
 - Operational management
 - Inventory / supply chain visibility
 - Compliance & audit
 - Contract renewal management (5-year terms)
+- **Users**: Mitra aktif (franchise owners), operational staff
 
 > See `vault/decisions/adr-001-two-phase-separation.md` for full rationale.
 
@@ -133,8 +135,8 @@ Both Indomaret and Alfamart have weak digital franchise systems. A modern unifie
 
 1. **Platform**: Web only? Mobile (Android/iOS)? Both?
 2. **Users**: Who uses the system? (Applicants, admin reviewers, management, Indomaret HQ?)
-3. **Scope**: Does EDTS cover both Phase 1 and Phase 2, or Phase 1 only?
-4. **Architecture**: Two separate apps or two modules in one platform?
+3. **Scope**: Does EDTS cover both apps or App 1 (Pengajuan) only?
+4. ~~**Architecture**: Two separate apps or two modules in one platform?~~ → **Resolved: 2 separate apps, separate DB, separate auth** (ADR-001)
 5. **Integration**: Existing EDTS/Indomaret systems to integrate with?
 6. **Timeline**: When does this need to be ready?
 7. **Tech stack**: Any EDTS preferences?
