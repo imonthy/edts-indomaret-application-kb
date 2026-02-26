@@ -51,19 +51,34 @@ Links flow outward only. vault/ may reference anything. design/ references requi
 
 ## Architectural Direction
 
-### Two Separate Apps (ADR-001 — Accepted)
+### Three Separate Apps (ADR-001 + ADR-002 — Accepted)
 
-**Confirmed by Ivan (2026-02-26):** Two separate applications, separate databases, separate auth. Users are completely different between phases — no shared authentication needed.
+**Confirmed by Ivan (2026-02-26):** Separate applications, separate databases, separate auth. Users are completely different between apps — no shared authentication needed.
+
+| App | Users | Purpose |
+|---|---|---|
+| **MitraApply** | Calon mitra (applicants) + admin | Franchise application submission & tracking |
+| **MitraSurvey** (new) | Indomaret surveyor team | On-site location feasibility assessment |
+| **MitraOps** | Mitra aktif + operational staff | Post-opening store management |
 
 **MitraApply — Pengajuan (Application):** Initial interest → MoU signing / store opening
 - Franchise application form (data diri, lokasi, modal)
 - Document collection & verification (KTP, NPWP, SIUP, IMB, NIB, etc.)
-- Location proposal & feasibility survey
-- Application status tracking
+- Location proposal submission (pin-drop on map, photos, location details)
+- Application status tracking (including survey status from MitraSurvey)
 - Admin review & approval workflow
 - Payment tracking (franchise fee ~Rp494M)
 - Communication between applicant & Indomaret
 - **Users**: Calon mitra (applicants), Indomaret admin reviewers
+
+**MitraSurvey — Survei Lokasi (Location Survey):** On-site feasibility assessment
+- Survey assignment & scheduling (triggered from MitraApply pipeline)
+- Mobile checklist assessment (accessibility, parking, foot traffic, competitor proximity, building condition, zoning, utilities)
+- Geotagged photo capture with GPS metadata
+- Feasibility scoring (weighted, auto-calculated)
+- Survey report generation (auto-generated for MitraApply review)
+- GIS integration (proximity analysis, demographic overlay, competitor mapping)
+- **Users**: Indomaret surveyor team (field staff)
 
 **MitraOps — Pasca Buka Toko (Post-Opening):** After store is operational
 - Store performance dashboard
@@ -74,7 +89,7 @@ Links flow outward only. vault/ may reference anything. design/ references requi
 - Contract renewal management (5-year terms)
 - **Users**: Mitra aktif (franchise owners), operational staff
 
-> See `vault/decisions/adr-001-two-phase-separation.md` for full rationale.
+> See `vault/decisions/adr-001-two-phase-separation.md` and `vault/decisions/adr-002-three-app-architecture.md` for full rationale.
 
 ## Competitive Landscape (Distilled)
 
@@ -130,13 +145,14 @@ Both Indomaret and Alfamart have weak digital franchise systems. A modern unifie
 | `research/competitor/alfamart-franchise-portal-deep-dive.md` | Alfamart portal, app, and UX analysis |
 | `research/competitor/familymart-franchise-digital-systems-deep-dive.md` | FamilyMart across JP/TW/TH |
 | `research/competitor/international-franchise-systems-best-practices.md` | Lawson, Circle K, GS25, CU, OXXO, SaaS platforms |
+| `vault/decisions/adr-002-three-app-architecture.md` | ADR-002: MitraSurvey added as third app |
 
 ## Open Questions
 
 1. **Platform**: Web only? Mobile (Android/iOS)? Both?
 2. **Users**: Who uses the system? (Applicants, admin reviewers, management, Indomaret HQ?)
-3. **Scope**: Does EDTS cover both apps or App 1 (Pengajuan) only?
-4. ~~**Architecture**: Two separate apps or two modules in one platform?~~ → **Resolved: 2 separate apps, separate DB, separate auth** (ADR-001)
+3. **Scope**: Does EDTS cover all 3 apps, or a subset?
+4. ~~**Architecture**: Two separate apps or two modules in one platform?~~ → **Resolved: 3 separate apps, separate DB, separate auth** (ADR-001 → ADR-002)
 5. **Integration**: Existing EDTS/Indomaret systems to integrate with?
 6. **Timeline**: When does this need to be ready?
 7. **Tech stack**: Any EDTS preferences?

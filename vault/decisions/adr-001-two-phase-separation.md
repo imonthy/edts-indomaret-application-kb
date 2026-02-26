@@ -74,6 +74,8 @@ Everything after the store is operational:
 
 Accepted — confirmed by Ivan Jonathan (2026-02-26).
 
+> **Amended by [ADR-002](adr-002-three-app-architecture.md):** Architecture expanded from 2 apps to 3 apps. MitraSurvey added as a separate application for the Indomaret surveyor team (on-site location feasibility assessment). The core decision here (separate apps, separate DBs, separate auth) still holds — ADR-002 extends the same principle to a third app.
+
 ## Resolved Questions
 
 - ~~Are these two separate apps or two modules in one platform?~~ → **Two separate apps**
