@@ -27,11 +27,27 @@ tags:
 [18.19.37] Ivan Jonathan: Iya
 ```
 
+## Conversation (2026-02-26, 19:27–19:59) — Architecture Decision
+
+```
+[19.27] Ivan Jonathan: Iya, gw kepikir mau pisahin fasa pengajuan dgn fasa setelah toko buka
+[19.51] Monthy: separate apps or one platform with two modules?
+[19.54] Ivan Jonathan: Separate db
+[19.54] Monthy: Separate db tapi 1 app? Or 2 app?
+[19.58] Ivan Jonathan: Yg aman gmn ya?
+[19.58] Ivan Jonathan: Gw pikir kalo terpisah lebih aman
+[19.59] Ivan Jonathan: Dan usernya beda bgt
+```
+
 ## Key Takeaways
 
 - Ivan needs a **franchise application ("pengajuan franchise")** system
 - Brand: **Indomaret**
 - Platform question was asked but not clearly answered ("Iya" is ambiguous)
+- **Architecture decided: 2 separate apps, separate DBs, separate auth**
+  - Ivan's reasoning: "lebih aman" (more secure) + "usernya beda bgt" (users are very different)
+  - Phase 1 users: calon mitra (franchise applicants) + admin reviewers
+  - Phase 2 users: mitra aktif (active franchise owners) + operational staff
 
 ## Follow-up Needed
 
