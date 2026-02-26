@@ -27,7 +27,7 @@ Ivan confirmed (2026-02-26, 19:27–19:59):
 - "kalo terpisah lebih aman" — security through isolation
 - "usernya beda bgt" — completely different user bases, no shared auth needed
 
-### App 1: Pengajuan (Application)
+### MitraApply — Pengajuan (Application)
 Everything from initial interest to MoU signing / store opening:
 - Franchise application form (data diri, lokasi, modal)
 - Document collection & verification (KTP, NPWP, SIUP, IMB, NIB, etc.)
@@ -39,7 +39,7 @@ Everything from initial interest to MoU signing / store opening:
 
 **Users**: Calon mitra (franchise applicants), Indomaret admin reviewers
 
-### App 2: Pasca Buka Toko (Post-Opening)
+### MitraOps — Pasca Buka Toko (Post-Opening)
 Everything after the store is operational:
 - Store performance dashboard
 - Financial reporting (omzet, royalty with progressive 0-4% structure)
@@ -52,7 +52,7 @@ Everything after the store is operational:
 
 ## Architecture
 
-| Aspect | App 1 (Pengajuan) | App 2 (Pasca Buka Toko) |
+| Aspect | MitraApply (Pengajuan) | MitraOps (Pasca Buka Toko) |
 |---|---|---|
 | Database | Separate | Separate |
 | Auth | Separate | Separate |

@@ -55,7 +55,7 @@ Links flow outward only. vault/ may reference anything. design/ references requi
 
 **Confirmed by Ivan (2026-02-26):** Two separate applications, separate databases, separate auth. Users are completely different between phases — no shared authentication needed.
 
-**App 1 — Pengajuan (Application):** Initial interest → MoU signing / store opening
+**MitraApply — Pengajuan (Application):** Initial interest → MoU signing / store opening
 - Franchise application form (data diri, lokasi, modal)
 - Document collection & verification (KTP, NPWP, SIUP, IMB, NIB, etc.)
 - Location proposal & feasibility survey
@@ -65,7 +65,7 @@ Links flow outward only. vault/ may reference anything. design/ references requi
 - Communication between applicant & Indomaret
 - **Users**: Calon mitra (applicants), Indomaret admin reviewers
 
-**App 2 — Pasca Buka Toko (Post-Opening):** After store is operational
+**MitraOps — Pasca Buka Toko (Post-Opening):** After store is operational
 - Store performance dashboard
 - Financial reporting (omzet, royalty with progressive 0-4% structure)
 - Operational management
