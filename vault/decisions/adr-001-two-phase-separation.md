@@ -1,14 +1,15 @@
 ---
-title: "ADR-001: Separate Application Phase from Post-Opening Phase"
+title: "ADR-001: Three Separate Apps with Pub/Sub Communication"
 date: 2026-02-26
 status: accepted
 tags:
   - architecture
   - scope
   - phases
+  - pub-sub
 ---
 
-# ADR-001: Separate Application Phase from Post-Opening Phase
+# ADR-001: Three Separate Apps with Pub/Sub Communication
 
 ## Context
 
@@ -16,30 +17,39 @@ From initial discussion (Monthy, 2026-02-26):
 
 > "kepikir mau pisahin fasa pengajuan dgn fasa setelah toko buka"
 
-The idea is to treat franchise application and post-store-opening as two distinct phases, potentially two separate systems or modules.
+From follow-up call: Ivan also needs a surveyor app for Indomaret staff to survey proposed locations. Survey also runs post-opening for active stores.
 
 ## Decision
 
-**Two separate applications with separate databases and separate authentication.**
+**Three separate applications, separate databases, separate auth, communicating via pub/sub.**
 
-Ivan confirmed (2026-02-26, 19:27–19:59):
-- Separate DB → separate app
-- "kalo terpisah lebih aman" — security through isolation
-- "usernya beda bgt" — completely different user bases, no shared auth needed
+### App 1: MitraApply — Pengajuan (Application)
 
-### MitraApply — Pengajuan (Application)
-Everything from initial interest to MoU signing / store opening:
-- Franchise application form (data diri, lokasi, modal)
+Everything from initial interest to store opening:
+- Daftar (register application)
+- Izin kepala daerah check (regional head permit verification)
+- Down payment tracking (Rp4 juta)
 - Document collection & verification (KTP, NPWP, SIUP, IMB, NIB, etc.)
-- Location proposal & feasibility survey
 - Application status tracking
 - Admin review & approval workflow
-- Payment tracking (franchise fee ~Rp494M)
 - Communication between applicant & Indomaret
 
 **Users**: Calon mitra (franchise applicants), Indomaret admin reviewers
 
-### MitraOps — Pasca Buka Toko (Post-Opening)
+### App 2: MitraSurvey — Survey & Assessment
+
+Location feasibility surveys during application AND ongoing surveys for active stores:
+- Survey assignment & scheduling
+- Field data collection (photos, measurements, area assessment)
+- Feasibility scoring / reporting
+- Survey result submission
+- Used during application process (triggered from MitraApply)
+- Also used post-opening for active store assessments (triggered from MitraOps)
+
+**Users**: Indomaret surveyors/field staff, registered mitra (for some survey tasks)
+
+### App 3: MitraOps — Pasca Buka Toko (Post-Opening)
+
 Everything after the store is operational:
 - Store performance dashboard
 - Financial reporting (omzet, royalty with progressive 0-4% structure)
@@ -50,37 +60,85 @@ Everything after the store is operational:
 
 **Users**: Mitra aktif (active franchise owners), operational staff
 
-## Architecture
+## High-Level Registration Process
 
-| Aspect | MitraApply (Pengajuan) | MitraOps (Pasca Buka Toko) |
-|---|---|---|
-| Database | Separate | Separate |
-| Auth | Separate | Separate |
-| Users | Applicants + admin reviewers | Franchise owners + ops staff |
-| Data lifecycle | Short (application process) | Long (ongoing operations) |
-| Traffic pattern | Burst (promo periods) | Steady (daily operations) |
+**Goal: Reduce from 8 months → 3 months**
+
+```
+Daftar (MitraApply)
+  → Cek izin kepala daerah (MitraApply)
+    → Down payment Rp4 juta (MitraApply)
+      → Survey assessment mendalam (MitraSurvey)
+        → All clear? → Renovasi & buka gerai
+          → Store live → MitraOps
+```
+
+## Inter-App Communication
+
+**Pattern: Pub/Sub** — apps are separate but status/messaging must flow smoothly.
+
+```
+MitraApply ──publishes──→ [Event Bus] ──subscribes──→ MitraSurvey
+MitraSurvey ─publishes──→ [Event Bus] ──subscribes──→ MitraApply
+MitraApply ──publishes──→ [Event Bus] ──subscribes──→ MitraOps (handoff)
+MitraOps ────publishes──→ [Event Bus] ──subscribes──→ MitraSurvey (ongoing surveys)
+```
+
+Example events:
+- `application.ready_for_survey` — MitraApply → MitraSurvey
+- `survey.completed` — MitraSurvey → MitraApply
+- `application.approved` — MitraApply → MitraOps (handoff)
+- `store.survey_requested` — MitraOps → MitraSurvey
+
+**Technology options** (TBD — needs clarification from Ivan):
+- Google Cloud Pub/Sub (managed, scalable)
+- Redis Streams (simpler, lower cost for early stage)
+
+## Architecture Overview
+
+| Aspect | MitraApply | MitraSurvey | MitraOps |
+|---|---|---|---|
+| Database | Separate | Separate | Separate |
+| Auth | Separate | Separate | Separate |
+| Users | Applicants + admin | Surveyors + mitra | Franchise owners + ops |
+| Platform | Web + Android + iOS | Web + Android + iOS | Web + Android + iOS |
+| Data lifecycle | Medium (application) | Short (per survey) | Long (ongoing ops) |
+| Traffic pattern | Burst (promo) | Event-driven | Steady (daily) |
+| Communication | Publishes events | Subscribes + publishes | Subscribes + publishes |
 
 ## Rationale
 
-- **Different users** — applicants vs active franchise owners have no overlap
-- **Different data models** — application documents vs operational/financial data
-- **Security isolation** — sensitive application data (KTP, NPWP) isolated from operational data
-- **Independent delivery** — App 1 can ship without waiting for App 2
-- **Independent scaling** — different traffic patterns, different resource needs
-- **Competitor lesson** — Alfamart mixed both in ALFA app → fragmented, low adoption (3.5/5, 10K downloads for 3,600+ partners)
-- **Best practice** — 7-Eleven separates recruitment portal from operations app
+- **Different users** — three distinct user bases with minimal overlap
+- **Different data models** — application docs vs survey data vs operational data
+- **Security isolation** — sensitive PII (KTP, NPWP) isolated per app
+- **Independent delivery** — can ship apps in priority order
+- **Independent scaling** — different traffic patterns per app
+- **MitraSurvey spans both phases** — serves application process AND post-opening, hence its own app
+- **Pub/sub for loose coupling** — apps don't need direct API dependencies, events propagate naturally
+
+## Platform Strategy
+
+**Design for all three platforms (Web + Android + iOS), execute web first.**
+- AI-assisted build for speed
+- EDTS handles ongoing maintenance
+- Mobile follows web, shared design system
 
 ## Status
 
-Accepted — confirmed by Ivan Jonathan (2026-02-26).
+Accepted — confirmed by Ivan Jonathan (2026-02-26, call + WhatsApp).
 
 ## Resolved Questions
 
-- ~~Are these two separate apps or two modules in one platform?~~ → **Two separate apps**
-- ~~Shared auth or separate?~~ → **Separate auth** (users are completely different)
+- ~~Two apps or three?~~ → **Three: MitraApply, MitraSurvey, MitraOps**
+- ~~Shared auth or separate?~~ → **Separate auth**
+- ~~Platform?~~ → **Web + Android + iOS** (web first)
+- ~~Inter-app communication?~~ → **Pub/sub** (specific tech TBD)
 
-## Open Questions
+## Open Questions (Need Clarification from Ivan)
 
-- Does EDTS scope cover both apps or App 1 (Pengajuan) only?
-- Does Indomaret have existing systems for post-opening that we'd integrate with?
-- Platform for each app (web, mobile, both)?
+- Pub/sub technology choice: Google Cloud Pub/Sub vs Redis Streams vs other?
+- EDTS tech stack preferences for each app?
+- Does EDTS scope cover all 3 apps or prioritize?
+- Existing Indomaret systems to integrate with?
+- Timeline per app?
+- What specific surveys do registered mitra perform?
