@@ -47,31 +47,97 @@ Links flow outward only. vault/ may reference anything. design/ references requi
 - **Application**: Indomaret franchise submission/management system
 - **Stakeholder**: Ivan Jonathan (EDTS)
 - **Platform**: TBD — awaiting stakeholder confirmation
-- **Scope**: TBD — likely includes franchise application form, document upload, status tracking, admin dashboard
+- **Scope**: TBD — see Architectural Direction below
 
-## What We Know So Far
+## Architectural Direction
 
-From initial WhatsApp conversation (2026-02-26):
-- Ivan needs a "pengajuan franchise" (franchise application) system
-- Franchise brand: Indomaret
-- Platform not yet confirmed (web? mobile? both?)
-- No detailed requirements yet — need to gather from Ivan
+### Two-Phase Separation (ADR-001)
+
+The product is split into two distinct phases with different user needs and data models:
+
+**Phase 1 — Pengajuan (Application):** Initial interest → MoU signing / store opening
+- Franchise application form (data diri, lokasi, modal)
+- Document collection & verification (KTP, NPWP, SIUP, IMB, NIB, etc.)
+- Location proposal & feasibility survey
+- Application status tracking
+- Admin review & approval workflow
+- Payment tracking (franchise fee ~Rp494M)
+- Communication between applicant & Indomaret
+
+**Phase 2 — Pasca Buka Toko (Post-Opening):** After store is operational
+- Store performance dashboard
+- Financial reporting (omzet, royalty with progressive 0-4% structure)
+- Operational management
+- Inventory / supply chain visibility
+- Compliance & audit
+- Contract renewal management (5-year terms)
+
+> See `vault/decisions/adr-001-two-phase-separation.md` for full rationale.
+
+## Competitive Landscape (Distilled)
+
+### Indomaret Today
+- Basic web form at `indomaret.co.id/home/index/pendaftaran-waralaba`
+- 4-step process: Online form → Presentation 1 → Presentation 2 → MoU
+- No dedicated franchise app, no status tracking, no document portal
+- Operations are "autopilot" via centralized internal systems
+- **No Mitra (partner) app** — management through Indomaret's internal tools only
+
+### Alfamart (Direct Competitor)
+- 3 fragmented platforms: waralaba.alfamart.co.id, alfamartku.com, ALFA Franchise app
+- Portal partially broken (registration page in maintenance)
+- ALFA app: low adoption (10K downloads for 3,600+ partners, 3.5/5 rating)
+- No status tracking, no document management, no payment integration
+- **Maturity: Medium-Low** — digitized basics but poor execution
+
+### International Best Practices
+- **7-Eleven (USA)**: Gold standard — Salesforce CRM, automated credit checks, 7University training app (Schoox LMS), separate portals for recruitment vs operations
+- **Circle K**: 2025 NACS Award — AI recruitment platform, gamified onboarding, reduced turnover 13% across 5,200+ stores
+- **GS25 (Korea)**: Electronic contracts, "Bossmon" franchisee app, Scenera AIoT across 10K+ stores
+- **FamilyMart**: Strong on store ops (Google Cloud, Vertex AI) but franchise recruitment still semi-manual — same gap as Indomaret
+- **FranConnect**: Leading franchise SaaS (1,500+ brands) — full lifecycle from lead management to royalty automation
+
+### Key Opportunity
+Both Indomaret and Alfamart have weak digital franchise systems. A modern unified platform would leapfrog both. The bar to beat is low domestically; international examples (7-Eleven, Circle K) show what "great" looks like.
+
+## Indomaret Franchise Quick Facts
+
+| Item | Detail |
+|---|---|
+| Investment (new store) | Rp394M–500M (excl. rental) |
+| Investment (take over) | From Rp700M (incl. 5yr rental) |
+| Franchise fee | Rp36M / 5 years |
+| Royalty | Progressive: 0% (<175M) → 2% → 3% → 4% (>225M) |
+| Store size | 120–220 m² |
+| Contract term | 5 years |
+| Total stores | 23,100+ (~50% franchise) |
+| BEP estimate | 3–4 years |
+
+## Required Documents (Franchise Application)
+
+**Business permits**: IMB/PBG, NPWP, PKP, NIB (via OSS), STPW, Ijin Lingkungan, Domisili
+
+**Supporting docs**: KTP, KK, Sertifikat Bangunan, SIUP, TDP, IUTM/IUTS, Denah Lokasi, UUG
+
+## Research Files
+
+| File | Content |
+|---|---|
+| `research/market/indomaret-franchise-program.md` | Indomaret costs, process, documents, digital gap |
+| `research/competitor/convenience-store-franchise-application-systems.md` | 7 brands compared + 7-Eleven deep dive |
+| `research/competitor/alfamart-franchise-portal-deep-dive.md` | Alfamart portal, app, and UX analysis |
+| `research/competitor/familymart-franchise-digital-systems-deep-dive.md` | FamilyMart across JP/TW/TH |
+| `research/competitor/international-franchise-systems-best-practices.md` | Lawson, Circle K, GS25, CU, OXXO, SaaS platforms |
 
 ## Open Questions
 
 1. **Platform**: Web only? Mobile (Android/iOS)? Both?
 2. **Users**: Who uses the system? (Applicants, admin reviewers, management, Indomaret HQ?)
-3. **Scope**: What's the full feature list? Possible features:
-   - Franchise application form (data diri, lokasi, modal)
-   - Document upload (KTP, NPWP, SIUP, etc.)
-   - Application status tracking
-   - Admin review dashboard
-   - Notifications (email, push, WhatsApp?)
-   - Reporting/analytics
-   - Payment tracking (franchise fee)
-4. **Integration**: Any existing EDTS systems to integrate with?
-5. **Timeline**: When does this need to be ready?
-6. **Tech stack**: Any EDTS preferences? (React, Flutter, etc.)
+3. **Scope**: Does EDTS cover both Phase 1 and Phase 2, or Phase 1 only?
+4. **Architecture**: Two separate apps or two modules in one platform?
+5. **Integration**: Existing EDTS/Indomaret systems to integrate with?
+6. **Timeline**: When does this need to be ready?
+7. **Tech stack**: Any EDTS preferences?
 
 ## Conventions
 
