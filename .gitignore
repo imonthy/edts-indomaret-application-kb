@@ -1,0 +1,7 @@
+# OS files
+.DS_Store
+
+# Editor/tool state (per-machine)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.claude/settings.local.json
