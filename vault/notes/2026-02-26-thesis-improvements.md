@@ -437,3 +437,118 @@ The spec KB at ../edts-indomaret-application-kb provides helper scripts:
 | 6 | Bootstrap problem | KB acceptance criteria | Medium — guides KB development |
 | 7 | No prioritization | Bottleneck mapping with Ivan | High — needed immediately |
 | 8 | AI traverses KB manually | Helper scripts as agent tools (`kb query`, `kb impact`, `kb validate`) | High — builds with the KB |
+| 9 | Spec and app factors disconnected | Unified Lifecycle — spec factors mapped to app factors + 3 emergent factors | Medium — formalizes the full picture |
+
+---
+
+## 9. Unified Lifecycle — Twelve-Factor Spec × Twelve-Factor App
+
+### Gap
+
+The Twelve-Factor Spec and the original Twelve-Factor App exist as separate methodologies. But every app factor has a spec counterpart, and connecting them creates a complete AI-native development lifecycle.
+
+### The Mapping
+
+Every factor in the original 12-factor app has a corresponding spec-layer factor. When connected, the spec layer DRIVES the app layer:
+
+| # | App Factor (12FA) | Spec Factor (12FS) | The Connection |
+|---|---|---|---|
+| I | Codebase — one codebase per app | One KB, Many Apps | KB knows all codebases + their contracts |
+| II | Dependencies — explicitly declare | Explicit Spec Deps | Spec IMPLIES app dependencies (pub/sub → needs message broker, file upload → needs object storage) |
+| III | Config — store in environment | Domain in KB, Tech in App | KB defines WHAT config each app needs (e.g., MAP_API_KEY), app stores the values |
+| IV | Backing Services — attached resources | Apps as Resources to Each Other | KB defines the service topology — which apps depend on which |
+| V | Build, Release, Run — strict separation | Spec, Implement, Deploy | Same pipeline, two layers — spec version bump triggers app build |
+| VI | Processes — stateless | Stateless Agents | Both app processes and AI agents are stateless. State in DB (app) and KB (spec) |
+| VII | Port Binding — export via ports | Event Contracts as Interfaces | KB defines what each app exposes; app implements it |
+| VIII | Concurrency — scale via process model | Scale by Agent Type | KB knows traffic patterns per app, informs infra + parallelizes AI work |
+| IX | Disposability — fast startup, graceful shutdown | Fast Agent Startup | Both apps and agents are disposable. Restart without losing state |
+| X | Dev/Prod Parity — keep environments similar | Spec = Production | Contract tests run in both dev and prod. Spec always matches reality |
+| XI | Logs — event streams | Decision Records as Event Streams | Both operational logs (app) and ADRs (spec) are analyzable event streams |
+| XII | Admin Processes — one-off tasks | One-Off Agent Tasks | Migrations (app) and impact analyses (spec) are both one-off processes |
+
+### Three Emergent Factors
+
+The intersection produces three new factors that neither methodology covers alone:
+
+#### XIII. Contract-First Communication
+Apps don't just expose ports (12FA VII) — they implement **versioned contracts** defined in the spec. The spec layer validates compliance. Neither pure 12-factor app (doesn't care about spec) nor pure 12-factor spec (doesn't care about runtime) covers this bidirectional contract enforcement.
+
+```
+Spec defines:  application.ready_for_survey v1.0.0 { application_id, location_id, coords }
+App implements: publisher (MitraApply) + subscriber (MitraSurvey)
+Contract test:  validates both sides match the spec
+```
+
+#### XIV. Spec-Driven Infrastructure
+The spec implies what infrastructure is needed. This goes beyond both 12FA (which assumes infra exists) and 12FS (which describes behavior, not infra):
+
+| Spec Says | Infra Needed |
+|---|---|
+| Pub/sub events between apps | Message broker (Google Pub/Sub, Redis Streams) |
+| Document upload (KTP, NPWP) | Object storage (GCS, S3) |
+| Location coords + feasibility | Maps API, geospatial DB |
+| Real-time status tracking | WebSocket or SSE |
+| Progressive royalty calculation | Reliable compute (not just CRUD) |
+
+The KB doesn't just describe behavior — it describes the **infrastructure shape**. An architect agent can read the spec and produce an infrastructure requirements document.
+
+#### XV. Bidirectional Observability
+Both the spec and the running app are observable, and **drift between them is detected**:
+
+```
+Spec layer observability:
+  - Spec version changes (git history)
+  - Contract compatibility checks
+  - KB readiness status
+  - Test coverage per entity/flow
+
+App layer observability:
+  - Runtime behavior (logs, metrics)
+  - Event flow monitoring (pub/sub)
+  - Error rates per status transition
+  - Performance per flow step
+
+Drift detection (the intersection):
+  - Contract tests fail → spec and runtime disagree
+  - Status transition takes longer than spec's target → bottleneck reappeared
+  - Event payload has extra/missing fields → implementation diverged from spec
+  - New code path not covered by spec → unspecified behavior
+```
+
+Neither 12FA (focuses on runtime) nor 12FS (focuses on spec) covers drift detection between the two layers. This is unique to the intersection.
+
+### The Unified Lifecycle
+
+The two methodologies form a complete lifecycle with the spec layer DRIVING the app layer:
+
+```
+Spec Layer (KB)                    App Layer (Code)
+────────────────────────────────────────────────────
+I.    One KB, many apps         →  One codebase per app
+II.   Declare spec deps         →  Derive runtime deps from spec
+III.  Domain context in KB      →  Tech config in environment
+IV.   Define service topology   →  Implement as backing services
+V.    Spec → Implement → Deploy →  Build → Release → Run
+VI.   Stateless agents          ↔  Stateless processes
+VII.  Define event contracts    →  Implement port binding
+VIII. Scale by agent type       →  Scale by process type
+IX.   Disposable agents         ↔  Disposable processes
+X.    Spec = production truth   ↔  Dev/prod parity
+XI.   ADRs as event stream      ↔  Logs as event stream
+XII.  One-off agent tasks       ↔  One-off admin processes
+XIII. Contract-first (emergent)  ↔  Versioned interfaces
+XIV.  Spec-driven infra (emergent) → Infrastructure shape
+XV.   Bidirectional observability ↔  Drift detection
+```
+
+Arrow meanings:
+- `→` spec drives app (spec layer is authoritative)
+- `↔` bidirectional (both layers participate equally)
+
+### Why This Matters
+
+The original 12-factor app answered: **"How should modern apps be built and deployed?"**
+
+The unified lifecycle answers: **"How should multi-app systems be specified, built, deployed, and kept in sync — when AI agents do the building?"**
+
+The spec layer is the missing piece that makes AI-native development systematic rather than ad-hoc. Without it, each AI agent session is a fresh start. With it, every session operates against a versioned, validated, observable contract.
